@@ -1,4 +1,5 @@
 import Defuddle from 'defuddle/full';
+import { overlayParsedContent, prepareDocumentForClip } from '../cn/overlay';
 import { setElementHTML } from './dom-utils';
 
 // Parse document content for clipping. In reader mode, extracts from
@@ -15,7 +16,11 @@ export function parseForClip(doc: Document) {
 				...Array.from(readerArticle.childNodes).map(n => readerDoc.importNode(n, true))
 			);
 		}
-		return new Defuddle(readerDoc, { url: '' }).parse();
+		prepareDocumentForClip(readerDoc);
+		const parsed = new Defuddle(readerDoc, { url: '' }).parse();
+		return overlayParsedContent(doc.URL, readerDoc, parsed);
 	}
-	return new Defuddle(doc, { url: doc.URL }).parse();
+	prepareDocumentForClip(doc);
+	const parsed = new Defuddle(doc, { url: doc.URL }).parse();
+	return overlayParsedContent(doc.URL, doc, parsed);
 }

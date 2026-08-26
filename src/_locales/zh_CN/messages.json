@@ -563,6 +563,18 @@
 	"notesAboutPage": {
 		"message": "关于此页面的笔记..."
 	},
+	"clippingManyImages": {
+		"message": "剪藏图片较多，请耐心等待"
+	},
+	"feishuLark": {
+		"message": "飞书 / Lark"
+	},
+	"feishuAppId": {
+		"message": "App ID"
+	},
+	"feishuAppSecret": {
+		"message": "App Secret"
+	},
 	"onlyHttpSupported": {
 		"message": "无法剪藏此页面。仅支持 http 和 https URL。"
 	},

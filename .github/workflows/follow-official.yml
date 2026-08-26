@@ -1,0 +1,43 @@
+name: Follow official
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Official tag to rebase onto (empty = latest)
+        required: false
+
+jobs:
+  rebase-overlay:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: cn-overlay
+
+      - name: Add official upstream
+        run: |
+          git remote add upstream https://github.com/obsidianmd/obsidian-clipper.git || true
+          git fetch upstream --tags
+
+      - name: Rebase overlay
+        run: node scripts/rebase-overlay.js ${{ github.event.inputs.tag }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:chrome
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: obsidian-clipper-cn
+          path: dist/*.zip

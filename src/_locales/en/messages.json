@@ -563,6 +563,18 @@
 	"notesAboutPage": {
 		"message": "Notes about this page..."
 	},
+	"clippingManyImages": {
+		"message": "Clipping many images. Please wait..."
+	},
+	"feishuLark": {
+		"message": "Feishu / Lark"
+	},
+	"feishuAppId": {
+		"message": "App ID"
+	},
+	"feishuAppSecret": {
+		"message": "App Secret"
+	},
 	"onlyHttpSupported": {
 		"message": "This page cannot be clipped. Only http and https URLs are supported."
 	},

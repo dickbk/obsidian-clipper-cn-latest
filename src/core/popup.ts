@@ -22,6 +22,7 @@ import { debounce } from '../utils/debounce';
 import { sanitizeFileName } from '../utils/string-utils';
 import { saveFile } from '../utils/file-utils';
 import { translatePage, getMessage, setupLanguageAndDirection } from '../utils/i18n';
+import { handleFeishuImageClippingStarted } from '../cn/feishu-popup';
 import { formatPropertyValue } from '../utils/shared';
 
 interface ReaderModeResponse {
@@ -258,6 +259,8 @@ function setupMessageListeners() {
 					refreshFields(currentTabId);
 				}
 			}
+		} else if (request.action === "feishuImageClippingStarted") {
+			handleFeishuImageClippingStarted(request);
 		} else if (request.action === "activeTabChanged") {
 			// Only handle active tab changes if we're in side panel mode, not iframe mode
 			if (!isIframe) {

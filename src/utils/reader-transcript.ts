@@ -1,4 +1,5 @@
 import { getMessage } from './i18n';
+import { createBilibiliPlaybackTracker } from '../cn/bilibili-playback-tracker';
 
 // CJK-aware text boundary helpers
 const SENT_END = /[.!?。！？]/;
@@ -48,13 +49,18 @@ export function wireTranscript(
 	scroll: ScrollHelper,
 	onSettingChange?: (key: keyof TranscriptSettings, value: boolean) => void
 ): void {
-	const transcript = article.querySelector('.youtube.transcript') as HTMLElement | null;
+	const transcript = article.querySelector('.youtube.transcript, .bilibili.transcript') as HTMLElement | null;
 	if (!transcript) return;
 
-	const iframe = article.querySelector('iframe[src*="youtube.com/embed/"]') as HTMLIFrameElement | null;
+	const isBilibili = transcript.classList.contains('bilibili');
+	const iframe = article.querySelector(
+		isBilibili ? 'iframe[src*="player.bilibili.com"]' : 'iframe[src*="youtube.com/embed/"]'
+	) as HTMLIFrameElement | null;
 	const videoWrapper = article.querySelector('.reader-video-wrapper') as HTMLElement | null;
 	const videoEl = videoWrapper?.querySelector('video.reader-video-player') as HTMLVideoElement | null;
-	const thumbnailLink = article.querySelector('a[href*="youtube.com/watch"]') as HTMLAnchorElement | null;
+	const thumbnailLink = article.querySelector(
+		isBilibili ? 'a[href*="bilibili.com/video/"]' : 'a[href*="youtube.com/watch"]'
+	) as HTMLAnchorElement | null;
 	const playerEl = (videoWrapper || iframe || thumbnailLink) as HTMLElement | null;
 	if (!playerEl) return;
 
@@ -144,8 +150,8 @@ export function wireTranscript(
 
 	playerContainer.appendChild(toggleBar);
 
-	if (iframe) {
-		// Enable JS API on the embed
+	if (iframe && !isBilibili) {
+		// Enable JS API on the YouTube embed
 		const src = new URL(iframe.src);
 		src.searchParams.set('enablejsapi', '1');
 		src.searchParams.set('origin', window.location.origin);
@@ -397,6 +403,71 @@ export function wireTranscript(
 			if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'KeyJ' || e.code === 'KeyL') {
 				e.preventDefault();
 			}
+		});
+	} else if (iframe && isBilibili) {
+		let pendingBilibiliSeek: number | null = null;
+		let lastBilibiliReload = 0;
+		const playbackTracker = createBilibiliPlaybackTracker(0);
+
+		const reloadBilibiliIframe = (seconds: number) => {
+			const src = new URL(iframe.src);
+			src.searchParams.set('t', String(Math.max(0, Math.floor(seconds))));
+			src.searchParams.set('autoplay', '1');
+			iframe.src = src.toString();
+			lastBilibiliReload = Date.now();
+			playbackTracker.startTracking(seconds);
+		};
+
+		seekTo = (seconds: number) => {
+			pendingBilibiliSeek = seconds;
+			playbackTracker.startTracking(seconds);
+			updateActiveSegment(seconds);
+			if (!scrubbing && Date.now() - lastBilibiliReload > 400) {
+				reloadBilibiliIframe(seconds);
+				pendingBilibiliSeek = null;
+			}
+		};
+
+		iframe.addEventListener('load', () => {
+			try {
+				const src = new URL(iframe.src);
+				const t = parseFloat(src.searchParams.get('t') || '0');
+				playbackTracker.startTracking(Number.isFinite(t) ? t : 0);
+			} catch {
+				playbackTracker.startTracking(0);
+			}
+		});
+
+		const onMessage = (e: MessageEvent) => {
+			const fromIframe = e.source === iframe.contentWindow;
+			let fromBilibiliOrigin = false;
+			try {
+				fromBilibiliOrigin = new URL(e.origin).hostname.endsWith('bilibili.com');
+			} catch {}
+			if (!fromIframe && !fromBilibiliOrigin) return;
+			playbackTracker.handlePlayerMessage(e.data);
+		};
+		window.addEventListener('message', onMessage);
+
+		const poll = setInterval(() => {
+			if (!doc.contains(iframe)) {
+				clearInterval(poll);
+				window.removeEventListener('message', onMessage);
+				return;
+			}
+			const playbackState = (navigator as Navigator & {
+				mediaSession?: { playbackState?: string };
+			}).mediaSession?.playbackState;
+			if (playbackState === 'playing' || playbackState === 'paused' || playbackState === 'none') {
+				playbackTracker.syncPlaybackState(playbackState);
+			}
+			updateActiveSegment(playbackTracker.getEstimatedTime());
+		}, 500);
+
+		window.addEventListener('mouseup', () => {
+			if (pendingBilibiliSeek === null) return;
+			reloadBilibiliIframe(pendingBilibiliSeek);
+			pendingBilibiliSeek = null;
 		});
 	} else if (iframe) {
 		// Iframe embed: use postMessage API

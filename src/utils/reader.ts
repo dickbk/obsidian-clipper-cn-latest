@@ -28,6 +28,8 @@ import { getMessage, initializeI18n } from './i18n';
 import { getFontCss, isFontAvailable } from './font-utils';
 import { createMarkdownContent } from 'defuddle/full';
 import { saveFile } from './file-utils';
+import { overlayParsedContentAsync, prepareDocumentForClip } from '../cn/overlay';
+import { disableBilibiliReaderEmbed, enableBilibiliReaderEmbed, isBilibiliHost } from '../cn/bilibili-embed';
 import { parseForClip } from './clip-utils';
 import { updateSidebarWidth, addResizeHandle, cleanupResizeHandlers } from './iframe-resize';
 import { setElementHTML, setSVGChildren, serializeChildren } from './dom-utils';
@@ -872,7 +874,12 @@ export class Reader {
 		}
 
 		const defuddle = new Defuddle(doc, { url: doc.URL });
-		const defuddled = await defuddle.parseAsync();
+		prepareDocumentForClip(doc);
+		const defuddled = await overlayParsedContentAsync(
+			doc.URL,
+			doc,
+			await defuddle.parseAsync()
+		);
 
 		return {
 			content: defuddled.content,
@@ -2000,11 +2007,12 @@ export class Reader {
 			let youtubeVideoElement: HTMLVideoElement | null = null;
 			const host = doc.URL ? new URL(doc.URL).hostname : '';
 			const isYouTube = host.includes('youtube.com') || host.includes('youtu.be');
+			const isBilibili = isBilibiliHost(host);
 			const browserType = await detectBrowser();
 			// Safari/Firefox block canvas font metrics, so the font-availability
 			// probe must fall back to the Font Loading API on those browsers.
 			this.fontProbeBlocked = ['safari', 'mobile-safari', 'ipad-os', 'orion', 'firefox', 'firefox-mobile'].includes(browserType);
-			if (isYouTube) {
+			if (isYouTube || isBilibili) {
 				const videoElement = doc.querySelector('video');
 				if (videoElement) {
 					videoTimestamp = Math.floor(videoElement.currentTime);
@@ -2269,8 +2277,10 @@ export class Reader {
 
 			// On YouTube, replace the Defuddle-generated iframe with the
 			// preserved native video element, or fall back to embed
-			if (isYouTube) {
-				const iframe = article.querySelector('iframe[src*="youtube.com/embed/"]') as HTMLIFrameElement;
+			if (isYouTube || isBilibili) {
+				const iframe = article.querySelector(
+					isBilibili ? 'iframe[src*="player.bilibili.com"]' : 'iframe[src*="youtube.com/embed/"]'
+				) as HTMLIFrameElement;
 				if (iframe && youtubeVideoElement) {
 					// Use the original video element instead of an iframe
 					youtubeVideoElement.className = 'reader-video-player';
@@ -2295,6 +2305,19 @@ export class Reader {
 					videoWrapper.appendChild(youtubeVideoElement);
 					iframe.replaceWith(videoWrapper);
 				} else if (iframe) {
+					if (isBilibili) {
+						await enableBilibiliReaderEmbed();
+						if (videoTimestamp > 0 || videoWasPlaying) {
+							const src = new URL(iframe.src);
+							if (videoTimestamp > 0) {
+								src.searchParams.set('t', String(videoTimestamp));
+							}
+							if (videoWasPlaying) {
+								src.searchParams.set('autoplay', '1');
+							}
+							iframe.src = src.toString();
+						}
+					} else {
 					// Fallback: use embed with header modification (Chrome)
 					// or thumbnail (Safari)
 					const embedUrl = new URL(iframe.src);
@@ -2335,6 +2358,7 @@ export class Reader {
 							}
 							iframe.src = src.toString();
 						}
+					}
 					}
 				}
 			}
@@ -2377,6 +2401,9 @@ export class Reader {
 			const host = doc.URL ? new URL(doc.URL).hostname : '';
 			if (host.includes('youtube.com') || host.includes('youtu.be')) {
 				messages.push(browser.runtime.sendMessage({ action: 'disableYouTubeEmbedRule' }).catch(() => {}));
+			}
+			if (isBilibiliHost(host)) {
+				messages.push(disableBilibiliReaderEmbed());
 			}
 
 			await Promise.all(messages);
@@ -2709,6 +2736,13 @@ export class Reader {
 				await browser.runtime.sendMessage({
 					action: 'enableYouTubeEmbedRule'
 				}).catch(() => {});
+				iframe.src = iframe.src;
+			}
+		}
+		if (isBilibiliHost(host)) {
+			const iframe = article.querySelector('iframe[src*="player.bilibili.com"]') as HTMLIFrameElement;
+			if (iframe) {
+				await enableBilibiliReaderEmbed();
 				iframe.src = iframe.src;
 			}
 		}

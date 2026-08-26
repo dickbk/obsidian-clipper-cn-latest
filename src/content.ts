@@ -11,6 +11,7 @@ import { serializeChildren } from './utils/dom-utils';
 import { saveFile } from './utils/file-utils';
 import { debugLog } from './utils/debug';
 import { updateSidebarWidth, addResizeHandle, cleanupResizeHandlers } from './utils/iframe-resize';
+import { overlayParsedContentAsync, prepareDocumentForClip } from './cn/overlay';
 import { parseForClip } from './utils/clip-utils';
 
 declare global {
@@ -151,9 +152,14 @@ declare global {
 		}
 
 		if (request.action === "copyMarkdownToClipboard") {
-			flattenShadowDom(document).then(() => {
+			flattenShadowDom(document).then(async () => {
 				try {
-					const defuddled = parseForClip(document);
+					prepareDocumentForClip(document);
+					const defuddled = await overlayParsedContentAsync(
+						document.URL,
+						document,
+						parseForClip(document)
+					);
 
 					// Convert HTML content to markdown
 					const markdown = createMarkdownContent(defuddled.content, document.URL);
@@ -178,7 +184,12 @@ declare global {
 		if (request.action === "saveMarkdownToFile") {
 			flattenShadowDom(document).then(async () => {
 				try {
-					const defuddled = parseForClip(document);
+					prepareDocumentForClip(document);
+					const defuddled = await overlayParsedContentAsync(
+						document.URL,
+						document,
+						parseForClip(document)
+					);
 					const markdown = createMarkdownContent(defuddled.content, document.URL);
 					const title = defuddled.title || document.title || 'Untitled';
 					const fileName = title.replace(/[/\\?%*:|"<>]/g, '-');
@@ -213,12 +224,14 @@ declare global {
 
 				// Use parseAsync to ensure async variables like {{transcript}} are available.
 				// If it hangs (e.g. another extension has corrupted fetch), fall back to sync parse.
+				prepareDocumentForClip(document);
 				const defuddle = new Defuddle(document, { url: document.URL });
 				const parseTimeout = new Promise<never>((_, reject) =>
 					setTimeout(() => reject(new Error('parseAsync timeout')), 8000)
 				);
 				const defuddled = await Promise.race([defuddle.parseAsync(), parseTimeout])
 					.catch(() => defuddle.parse());
+				await overlayParsedContentAsync(document.URL, document, defuddled);
 				const extractedContent: { [key: string]: string } = {
 					...defuddled.variables,
 				};
@@ -227,6 +240,7 @@ declare global {
 				const parser = new DOMParser();
 				// Parse the document's HTML
 				const doc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
+				prepareDocumentForClip(doc);
 
 				// Remove all script and style elements
 				doc.querySelectorAll('script, style').forEach(el => el.remove());
