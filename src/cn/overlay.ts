@@ -1,6 +1,9 @@
 import { extractFeishuStructuredContent, isFeishuDocUrl } from './feishu-extractor';
 import { normalizeImageSources } from './image-normalize';
 import { createLogger } from './logger';
+import { rewriteBilibiliEmbedInParsedContent } from './bilibili-video-meta';
+import { overlayBilibiliTranscript } from './transcript-overlay';
+import { stripTranscriptFallback } from './transcript-html';
 import { extractWeChatArticleContent } from './wechat';
 
 const logger = createLogger('Overlay');
@@ -11,6 +14,7 @@ export interface OverlayClipFields {
 	author?: string;
 	site?: string;
 	wordCount?: number;
+	variables?: { [key: string]: string };
 }
 
 export function prepareDocumentForClip(doc: Pick<Document, 'querySelectorAll'>): void {
@@ -26,13 +30,17 @@ export function overlayParsedContent<T extends OverlayClipFields>(
 	if (wechatContent) {
 		parsed.content = wechatContent;
 	}
+	if (parsed.content) {
+		parsed.content = stripTranscriptFallback(parsed.content);
+	}
 	return parsed;
 }
 
 export async function overlayParsedContentAsync<T extends OverlayClipFields>(
 	url: string,
 	pageDoc: Document,
-	parsed: T
+	parsed: T,
+	options?: { forReader?: boolean }
 ): Promise<T> {
 	if (isFeishuDocUrl(url)) {
 		try {
@@ -49,5 +57,8 @@ export async function overlayParsedContentAsync<T extends OverlayClipFields>(
 		}
 	}
 
-	return overlayParsedContent(url, pageDoc, parsed);
+	overlayParsedContent(url, pageDoc, parsed);
+	await rewriteBilibiliEmbedInParsedContent(url, parsed);
+	await overlayBilibiliTranscript(url, parsed, { forReader: options?.forReader });
+	return parsed;
 }

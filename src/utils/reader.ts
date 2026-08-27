@@ -30,6 +30,8 @@ import { createMarkdownContent } from 'defuddle/full';
 import { saveFile } from './file-utils';
 import { overlayParsedContentAsync, prepareDocumentForClip } from '../cn/overlay';
 import { disableBilibiliReaderEmbed, enableBilibiliReaderEmbed, isBilibiliHost } from '../cn/bilibili-embed';
+import { bindBilibiliEmbedIframe } from '../cn/bilibili-video-meta';
+import { wireTranscriptFallback } from '../cn/transcript-reader';
 import { parseForClip } from './clip-utils';
 import { updateSidebarWidth, addResizeHandle, cleanupResizeHandlers } from './iframe-resize';
 import { setElementHTML, setSVGChildren, serializeChildren } from './dom-utils';
@@ -878,7 +880,8 @@ export class Reader {
 		const defuddled = await overlayParsedContentAsync(
 			doc.URL,
 			doc,
-			await defuddle.parseAsync()
+			await defuddle.parseAsync(),
+			{ forReader: true }
 		);
 
 		return {
@@ -2027,6 +2030,13 @@ export class Reader {
 				}
 			}
 
+			if (isBilibili) {
+				await browser.runtime.sendMessage({
+					action: 'cnSnapshotBilibiliAudio',
+					url: doc.URL,
+				}).catch(() => {});
+			}
+
 			let spinner: HTMLElement;
 			let article: HTMLElement;
 			let main: HTMLElement;
@@ -2307,16 +2317,10 @@ export class Reader {
 				} else if (iframe) {
 					if (isBilibili) {
 						await enableBilibiliReaderEmbed();
-						if (videoTimestamp > 0 || videoWasPlaying) {
-							const src = new URL(iframe.src);
-							if (videoTimestamp > 0) {
-								src.searchParams.set('t', String(videoTimestamp));
-							}
-							if (videoWasPlaying) {
-								src.searchParams.set('autoplay', '1');
-							}
-							iframe.src = src.toString();
-						}
+						await bindBilibiliEmbedIframe(iframe, doc.URL, {
+							t: videoTimestamp > 0 ? videoTimestamp : undefined,
+							autoplay: videoWasPlaying,
+						});
 					} else {
 					// Fallback: use embed with header modification (Chrome)
 					// or thumbnail (Safari)
@@ -2374,6 +2378,19 @@ export class Reader {
 			}, (key, value) => {
 				(this.settings as any)[key] = value;
 				this.saveSettings();
+			});
+			wireTranscriptFallback(doc, article, {
+				settings: this.settings,
+				scroll: {
+					getStickyOffset: () => this.getStickyOffset(),
+					scrollTo: (y) => this.scrollTo(y),
+					programmaticScroll: () => this.programmaticScroll,
+				},
+				onSettingChange: (key, value) => {
+					(this.settings as any)[key] = value;
+					this.saveSettings();
+				},
+				storeOriginalHtml: (el) => this.storeOriginalHtml(el),
 			});
 
 			if (extractorType) {
@@ -2743,7 +2760,7 @@ export class Reader {
 			const iframe = article.querySelector('iframe[src*="player.bilibili.com"]') as HTMLIFrameElement;
 			if (iframe) {
 				await enableBilibiliReaderEmbed();
-				iframe.src = iframe.src;
+				await bindBilibiliEmbedIframe(iframe, doc.URL);
 			}
 		}
 
@@ -2756,6 +2773,19 @@ export class Reader {
 		}, (key, value) => {
 			(this.settings as any)[key] = value;
 			this.saveSettings();
+		});
+		wireTranscriptFallback(doc, article, {
+			settings: this.settings,
+			scroll: {
+				getStickyOffset: () => this.getStickyOffset(),
+				scrollTo: (y) => this.scrollTo(y),
+				programmaticScroll: () => this.programmaticScroll,
+			},
+			onSettingChange: (key, value) => {
+				(this.settings as any)[key] = value;
+				this.saveSettings();
+			},
+			storeOriginalHtml: (el) => this.storeOriginalHtml(el),
 		});
 
 		await this.initializeContentFeatures(doc, content.title);

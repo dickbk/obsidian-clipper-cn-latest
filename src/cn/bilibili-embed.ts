@@ -42,14 +42,17 @@ export function installBilibiliEmbedListeners(): void {
 		browser.webRequest.onBeforeSendHeaders.addListener(
 			(details) => {
 				const headers = (details.requestHeaders || []).filter(
-					h => h.name.toLowerCase() !== 'referer'
+					h => h.name.toLowerCase() !== 'referer' && h.name.toLowerCase() !== 'origin'
 				);
 				headers.push({ name: 'Referer', value: 'https://www.bilibili.com/' });
+				if (details.url.includes('member.bilibili.com')) {
+					headers.push({ name: 'Origin', value: 'https://www.bilibili.com' });
+				}
 				return { requestHeaders: headers };
 			},
 			{
-				urls: ['*://player.bilibili.com/*'],
-				types: ['sub_frame' as browser.WebRequest.ResourceType]
+				urls: ['*://player.bilibili.com/*', '*://*.bilivideo.com/*', '*://*.bilivideo.cn/*', '*://member.bilibili.com/*'],
+				types: ['sub_frame', 'xmlhttprequest', 'other', 'media'] as browser.WebRequest.ResourceType[]
 			},
 			['blocking', 'requestHeaders']
 		);

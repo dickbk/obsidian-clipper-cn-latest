@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-clipper",
-	"version": "1.7.1",
-	"description": "Official web clipper for Obsidian.",
+	"name": "obsidian-clipper-cn",
+	"version": "0.1.0",
+	"description": "Chinese-enhanced fork of Obsidian Web Clipper (official baseline 1.7.1).",
 	"bin": {
 		"obsidian-clipper": "./dist/cli.cjs"
 	},

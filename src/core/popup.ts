@@ -23,6 +23,7 @@ import { sanitizeFileName } from '../utils/string-utils';
 import { saveFile } from '../utils/file-utils';
 import { translatePage, getMessage, setupLanguageAndDirection } from '../utils/i18n';
 import { handleFeishuImageClippingStarted } from '../cn/feishu-popup';
+import { initializeTranscriptGeneratorControls, syncTranscriptGeneratorPanel } from '../cn/transcript-popup';
 import { formatPropertyValue } from '../utils/shared';
 
 interface ReaderModeResponse {
@@ -395,6 +396,26 @@ document.addEventListener('DOMContentLoaded', async function() {
 					});
 				}
 
+				initializeTranscriptGeneratorControls({
+					getTabId: () => currentTabId,
+					applyTranscript: async (text: string) => {
+						if (currentVariables['{{transcript}}'] === text) return;
+						currentVariables['{{transcript}}'] = text;
+						// Recompile note fields only. Never call refreshFields here —
+						// that re-extracts the page, restores platform CC stubs, and
+						// re-enters syncTranscriptGeneratorPanel (popup flicker loop).
+						if (currentTabId !== undefined && currentTemplate) {
+							memoizedCompileTemplate.clear();
+							await fillTemplateFieldValues(
+								currentTabId,
+								currentTemplate,
+								currentVariables,
+								undefined
+							);
+							updateVariablesPanel(currentTemplate, currentVariables);
+						}
+					},
+				});
 				// Initial content load
 				await refreshFields(currentTabId);
 			} catch (error) {
@@ -736,6 +757,7 @@ async function refreshFields(tabId: number, { checkTemplateTriggers = true, rebu
 
 				// Update variables panel if it's open
 				updateVariablesPanel(currentTemplate, currentVariables);
+				await syncTranscriptGeneratorPanel(currentUrl, currentVariables);
 			} else {
 				throw new Error('Unable to initialize page content.');
 			}

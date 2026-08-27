@@ -575,6 +575,45 @@
 	"feishuAppSecret": {
 		"message": "App Secret"
 	},
+	"transcriptGenerator": {
+		"message": "Transcript generator"
+	},
+	"transcriptGeneratorDescription": {
+		"message": "When a Bilibili video has no CC track, download the audio and generate a timestamped transcript with Alibaba Cloud FunASR (Qwen AI Platform). Audio is uploaded to temporary storage (~¥0.9/hour of speech). On-screen hard subtitles are not a CC track."
+	},
+	"transcriptGeneratorEnable": {
+		"message": "Generate transcript when CC is missing"
+	},
+	"funasrApiKey": {
+		"message": "Qwen AI Platform API Key"
+	},
+	"funasrApiKeyHelp": {
+		"message": "Create a key at platform.qianwenai.com or dashscope.console.aliyun.com/apiKey (sk-ws-…). Only this key is required — audio uses temporary storage for Fun-ASR."
+	},
+	"transcriptGeneratorCopy": {
+		"message": "This video has no CC track. Generate a timestamped transcript and write it back to {{transcript}}."
+	},
+	"transcriptReaderCopy": {
+		"message": "This video has no CC track, so Reader cannot load a native transcript."
+	},
+	"transcriptReaderNote": {
+		"message": "Text you see on the player is likely burned into the video. The clipper can generate a speech transcript with Alibaba Cloud FunASR."
+	},
+	"transcriptGenerate": {
+		"message": "Generate transcript"
+	},
+	"transcriptGenerating": {
+		"message": "Generating…"
+	},
+	"transcriptGenerated": {
+		"message": "Transcript ready. It is now available as {{transcript}}."
+	},
+	"transcriptGenerateFailed": {
+		"message": "Could not generate a transcript."
+	},
+	"transcriptStageQueued": {
+		"message": "Starting…"
+	},
 	"onlyHttpSupported": {
 		"message": "This page cannot be clipped. Only http and https URLs are supported."
 	},

@@ -18,6 +18,7 @@ import { getClipHistory } from '../utils/storage-utils';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import { initializeFeishuSettings } from '../cn/feishu-settings';
+import { initializeTranscriptSettings } from '../cn/transcript-settings';
 import { showModal, hideModal } from '../utils/modal-utils';
 
 dayjs.extend(weekOfYear);
@@ -229,6 +230,7 @@ export function initializeGeneralSettings(): void {
 		initializeExportHighlightsButton();
 		initializeSaveBehaviorDropdown();
 		initializeFeishuSettings();
+		initializeTranscriptSettings();
 		await initializeUsageChart();
 
 		// Initialize feedback modal close button

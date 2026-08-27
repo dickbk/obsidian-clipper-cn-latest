@@ -141,6 +141,27 @@
 		}
 	}
 
+	.cn-transcript-generator {
+		padding: 0 0.625rem 0.5rem;
+		border-top: 1px solid var(--divider-color);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		.cn-transcript-generator-copy,
+		.cn-transcript-generator-status {
+			margin: 0;
+			font-size: var(--font-ui-small);
+			color: var(--text-muted);
+			line-height: 1.45;
+		}
+		.cn-transcript-generator-status.is-error {
+			color: var(--text-error, #e93147);
+		}
+		button {
+			align-self: flex-start;
+		}
+	}
+
 	.clipper-footer {
 		width: 100%;
 		display: flex;

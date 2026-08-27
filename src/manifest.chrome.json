@@ -2,9 +2,9 @@
 	"manifest_version": 3,
 	"default_locale": "en",
 	"name": "Obsidian Web Clipper CN",
-	"homepage_url": "https://obsidian.md/",
-	"version": "1.7.1",
-	"description": "Official Web Clipper plus a Chinese overlay for Feishu, WeChat images, and Bilibili Reader.",
+	"homepage_url": "https://github.com/dickbk/obsidian-clipper-cn-latest",
+	"version": "0.1.0",
+	"description": "Chinese-enhanced fork of Obsidian Web Clipper (official baseline 1.7.1): Feishu, WeChat, Bilibili Reader, FunASR transcripts.",
 	"permissions": [
 		"activeTab",
 		"clipboardWrite",

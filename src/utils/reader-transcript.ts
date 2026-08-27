@@ -411,6 +411,12 @@ export function wireTranscript(
 
 		const reloadBilibiliIframe = (seconds: number) => {
 			const src = new URL(iframe.src);
+			const bvid = iframe.dataset.cnBvid;
+			const cid = iframe.dataset.cnCid;
+			const aid = iframe.dataset.cnAid;
+			if (bvid) src.searchParams.set('bvid', bvid);
+			if (cid) src.searchParams.set('cid', cid);
+			if (aid) src.searchParams.set('aid', aid);
 			src.searchParams.set('t', String(Math.max(0, Math.floor(seconds))));
 			src.searchParams.set('autoplay', '1');
 			iframe.src = src.toString();
@@ -422,7 +428,7 @@ export function wireTranscript(
 			pendingBilibiliSeek = seconds;
 			playbackTracker.startTracking(seconds);
 			updateActiveSegment(seconds);
-			if (!scrubbing && Date.now() - lastBilibiliReload > 400) {
+			if (!scrubbing && Date.now() - lastBilibiliReload > 1200) {
 				reloadBilibiliIframe(seconds);
 				pendingBilibiliSeek = null;
 			}

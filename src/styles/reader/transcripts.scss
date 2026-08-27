@@ -195,6 +195,34 @@ article > .player-toggles {
 	opacity: 1;
 }
 
+.cn-transcript-fallback {
+	margin: 1.5em 0;
+	padding: 1em 1.15em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	h2 {
+		margin-top: 0;
+	}
+	p {
+		color: var(--text-muted);
+		font-size: var(--font-ui-small);
+		line-height: 1.5;
+	}
+	button {
+		margin-top: 0.5em;
+	}
+	.cn-transcript-fallback-status,
+	.cn-transcript-fallback-status.is-error {
+		margin-bottom: 0;
+	}
+	.is-error,
+	&.is-error,
+	.cn-transcript-fallback-status.is-error {
+		color: var(--text-error, #e93147);
+	}
+}
+
 @media (max-width: 768px) {
 	.player-toggles {
 		display: none !important;

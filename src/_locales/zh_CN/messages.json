@@ -575,6 +575,45 @@
 	"feishuAppSecret": {
 		"message": "App Secret"
 	},
+	"transcriptGenerator": {
+		"message": "字幕生成"
+	},
+	"transcriptGeneratorDescription": {
+		"message": "B 站视频没有 CC 字幕轨时，下载音轨并用阿里云 FunASR（千问 AI 平台）生成带时间戳的逐字稿。音频会上传到平台临时存储，按语音时长计费（约 ¥0.9/小时）。画面里能看到的字如果是硬字幕，播放器上不会出现 CC 开关。"
+	},
+	"transcriptGeneratorEnable": {
+		"message": "无 CC 时自动生成逐字稿"
+	},
+	"funasrApiKey": {
+		"message": "千问 AI 平台 API Key"
+	},
+	"funasrApiKeyHelp": {
+		"message": "在 platform.qianwenai.com 或 dashscope.console.aliyun.com/apiKey 创建密钥（sk-ws-…）。仅需这一项即可上传到平台临时存储并用 Fun-ASR 识别。"
+	},
+	"transcriptGeneratorCopy": {
+		"message": "这个视频没有 CC 字幕轨。生成带时间戳的逐字稿，并写回 {{transcript}}。"
+	},
+	"transcriptReaderCopy": {
+		"message": "这个视频没有 CC 字幕轨，阅读模式无法加载平台字幕。"
+	},
+	"transcriptReaderNote": {
+		"message": "播放器里能看到的字多半是硬字幕。剪藏器可以用阿里云 FunASR 根据人声生成逐字稿。"
+	},
+	"transcriptGenerate": {
+		"message": "生成字幕"
+	},
+	"transcriptGenerating": {
+		"message": "正在生成…"
+	},
+	"transcriptGenerated": {
+		"message": "字幕已生成，可在 {{transcript}} 中使用。"
+	},
+	"transcriptGenerateFailed": {
+		"message": "无法生成字幕。"
+	},
+	"transcriptStageQueued": {
+		"message": "开始处理…"
+	},
 	"onlyHttpSupported": {
 		"message": "无法剪藏此页面。仅支持 http 和 https URL。"
 	},

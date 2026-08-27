@@ -333,7 +333,7 @@ export async function exportAllSettings(): Promise<void> {
 		// Create a copy of the data to modify
 		const exportData: StorageData = { ...allData };
 
-		const localKeys = ['feishu_settings', 'history', 'ratings', 'debugMode'] as const;
+		const localKeys = ['feishu_settings', 'cn_transcript_settings', 'history', 'ratings', 'debugMode'] as const;
 		const localData = await browser.storage.local.get([...localKeys]) as Record<string, unknown>;
 		exportData.__local = localData;
 

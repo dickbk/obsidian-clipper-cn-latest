@@ -263,6 +263,31 @@
 									</div>
 								</div>
 							</div>
+							<div class="setting-group">
+								<div class="setting-item setting-item-heading"><h3 data-i18n="transcriptGenerator">Transcript generator</h3></div>
+								<div class="setting-items">
+									<div class="setting-item-description" data-i18n="transcriptGeneratorDescription">
+										When a Bilibili video has no CC track, download the audio and generate a timestamped transcript with Alibaba Cloud FunASR (Qwen AI Platform). Hard-subtitles burned into the video are not a CC track.
+									</div>
+									<div class="setting-item mod-horizontal mod-toggle">
+										<div class="setting-item-info">
+											<label for="cn-transcript-enabled" data-i18n="transcriptGeneratorEnable">Generate transcript when CC is missing</label>
+										</div>
+										<div class="setting-item-control">
+											<div class="checkbox-container is-enabled">
+												<input type="checkbox" id="cn-transcript-enabled" checked/>
+											</div>
+										</div>
+									</div>
+									<div class="setting-item">
+										<label for="cn-funasr-api-key" data-i18n="funasrApiKey">Qwen AI Platform API Key</label>
+										<input type="password" id="cn-funasr-api-key" placeholder="sk-..." autocomplete="off" spellcheck="false" />
+									</div>
+									<div class="setting-item-description" data-i18n="funasrApiKeyHelp">
+										Get a key at platform.qianwenai.com or dashscope.console.aliyun.com/apiKey (sk-ws-…). Audio is uploaded to temporary storage for Fun-ASR recognition (~¥0.9/hour).
+									</div>
+								</div>
+							</div>
 						</form>
 					</div>
 
