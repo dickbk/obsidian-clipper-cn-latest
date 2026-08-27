@@ -5,7 +5,7 @@
 
 - 上游官方仓库：[obsidianmd/obsidian-clipper](https://github.com/obsidianmd/obsidian-clipper)
 - 中文增强参考：[nextcaicai/obsidian-clipper-cn](https://github.com/nextcaicai/obsidian-clipper-cn)（微信 / 飞书 / B 站阅读模式）
-- 无字幕转写参考：[whatcccup/obsidian-web-clipper-cn-transcript](https://github.com/whatcccup/obsidian-web-clipper-cn-transcript)（流程与产品思路；本仓库改为扩展内 FunASR，不依赖 macOS Helper）
+- 无字幕转写参考：[whatcccup/obsidian-web-clipper-cn-transcript](https://github.com/whatcccup/obsidian-web-clipper-cn-transcript)（流程与产品思路；原使用必剪 BCut 免费额度有限额，本仓库改为扩展内 FunASR - 多ASR比较后是当前性价比最高的方案，不依赖 macOS Helper）
 
 ## 架构方案（便于跟随官方更新）
 
@@ -67,7 +67,7 @@
 | B 站有 CC 字幕 | 无额外账号 | 继续用原生 `{{transcript}}` |
 | B 站无 CC / 不可用 CC | **千问 AI 平台 / DashScope API Key**（`sk-ws-…`） | 音频经临时存储上传后由 Fun-ASR 识别；约按量计费，详见[千问 Fun-ASR](https://www.qianwenai.com/models/fun-asr) |
 
-本仓库**不**依赖：必剪 BCut 免费额度、macOS Native Messaging Helper、本地 Faster Whisper。
+本仓库**不**依赖：必剪 BCut 免费额度（有额度限制，换成高性价比FunASR）、macOS Native Messaging Helper、本地 Faster Whisper。
 
 ## 快速开始
 
