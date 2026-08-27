@@ -4,7 +4,8 @@
 
 旁加载 = 不经过 Chrome / Edge / Firefox 商店，直接把本地构建结果或 Release zip 解压后装进浏览器。适合自测与分发；商店外安装需要开启开发者模式。
 
-版本对应关系见根目录 [README.md](../README.md) 中的「版本对应表」。
+版本对应关系见根目录 [README.md](../README.md) 中的「版本对应表」。  
+架构与跟随官方升级的 rebase 流程见 [architecture-cn.md](architecture-cn.md)。
 
 ## 开始前
 

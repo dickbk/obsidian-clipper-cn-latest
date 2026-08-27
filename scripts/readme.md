@@ -25,6 +25,15 @@ npm run update-locales
 npm run add-locale fr
 ```
 
+### CN overlay rebase（跟随官方）
+
+```bash
+npm run overlay:rebase -- 1.8.0
+```
+
+- 将当前 CN 分支变基到官方 tag（默认取 upstream 最新数字 tag）
+- 完整流程见 [`docs/architecture-cn.md`](../docs/architecture-cn.md)
+
 ### Version bump
 
 ```bash

@@ -7,16 +7,32 @@
 - 中文增强参考：[nextcaicai/obsidian-clipper-cn](https://github.com/nextcaicai/obsidian-clipper-cn)（微信 / 飞书 / B 站阅读模式）
 - 无字幕转写参考：[whatcccup/obsidian-web-clipper-cn-transcript](https://github.com/whatcccup/obsidian-web-clipper-cn-transcript)（流程与产品思路；本仓库改为扩展内 FunASR，不依赖 macOS Helper）
 
+## 架构方案（便于跟随官方更新）
+
+本仓库采用 **官方主干 + CN Overlay** 架构，而不是平行重写：
+
+- 官方负责模板、Interpreter、高亮、Reader、保存到 Obsidian
+- `src/cn/` 集中实现微信 / 飞书 / B 站 / FunASR 等中文增强
+- 仅在少数官方文件中保留薄 hook（`content` / `clip-utils` / `reader` / `background` / `popup` / `settings`）
+- 升级官方时：对官方 tag 做 `npm run overlay:rebase -- <官方版本>`，解决 hook 冲突后更新下方版本表
+
+完整说明（目录职责、hook 清单、rebase 步骤、验证清单）：[`docs/architecture-cn.md`](docs/architecture-cn.md)。
+
 ## 版本对应表（跟随官方更新）
 
 本仓库使用**独立产品版本号**；浏览器扩展 `manifest.version` 与 GitHub Release tag 一致。  
-「官方基线」记录本版本基于哪一版 [obsidianmd/obsidian-clipper](https://github.com/obsidianmd/obsidian-clipper) 源码。
+「官方基线」记录本版本基于哪一版 [obsidianmd/obsidian-clipper](https://github.com/obsidianmd/obsidian-clipper) 源码 / tag。
 
 | CN 版本 | 官方 Web Clipper 基线 | 说明 |
 | --- | --- | --- |
 | **0.1.0** | **1.7.1** | 首发：官方 1.7.1 + 中文叠层（微信 / 飞书 / B 站）+ FunASR 无 CC 转写 |
 
-后续跟随官方升级时，请同时更新本表、`package.json`、`src/manifest.*.json` 中的版本，并在 Release 中写明新的官方基线。
+后续跟随官方升级时：
+
+1. `git fetch upstream --tags` → `npm run overlay:rebase -- <新官方 tag>`
+2. 按 [`docs/architecture-cn.md`](docs/architecture-cn.md) 检查 hook 与回归
+3. 更新本表、`package.json`、`src/manifest.*.json` 中的 **CN 产品版本**（不要把 manifest 改回官方号）
+4. 发 Release，正文写明新的官方基线
 
 ## 与官方版本有什么不同？
 
