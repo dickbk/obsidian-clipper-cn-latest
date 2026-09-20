@@ -1,43 +1,76 @@
-name: Follow official
+# Detect-only: never rebase or release automatically.
+# Cron is 06:00 Asia/Shanghai (UTC 22:00).
+name: Detect official update
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Official tag to rebase onto (empty = latest)
-        required: false
 
 jobs:
-  rebase-overlay:
+  detect:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: cn-overlay
 
-      - name: Add official upstream
+      - name: Compare official baseline
+        id: compare
         run: |
-          git remote add upstream https://github.com/obsidianmd/obsidian-clipper.git || true
-          git fetch upstream --tags
+          set -euo pipefail
+          RESULT=$(node scripts/detect-official-update.js)
+          echo "$RESULT"
+          echo "result<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$RESULT" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          NEEDS=$(echo "$RESULT" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s);console.log(j.needsUpdate?'true':'false')})")
+          echo "needs_update=$NEEDS" >> "$GITHUB_OUTPUT"
+          BASELINE=$(echo "$RESULT" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>console.log(JSON.parse(s).baseline))")
+          LATEST=$(echo "$RESULT" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>console.log(JSON.parse(s).latest))")
+          echo "baseline=$BASELINE" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
 
-      - name: Rebase overlay
-        run: node scripts/rebase-overlay.js ${{ github.event.inputs.tag }}
+      - name: Open or refresh follow Issue
+        if: steps.compare.outputs.needs_update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASELINE: ${{ steps.compare.outputs.baseline }}
+          LATEST: ${{ steps.compare.outputs.latest }}
+        run: |
+          set -euo pipefail
+          TITLE="[official-follow] Upstream ${LATEST} available (baseline ${BASELINE})"
+          BODY=$(cat <<EOF
+          ## Official update detected
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
+          | | |
+          | --- | --- |
+          | CN tracked baseline | \`${BASELINE}\` (\`docs/official-baseline\`) |
+          | Official latest | \`${LATEST}\` |
+          | Official repo | https://github.com/obsidianmd/obsidian-clipper |
+          | Official releases | https://github.com/obsidianmd/obsidian-clipper/releases |
 
-      - run: npm ci
-      - run: npm test
-      - run: npm run build:chrome
+          ## Next steps (human / Codex — not automatic)
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: obsidian-clipper-cn
-          path: dist/*.zip
+          1. Codex: produce upgrade strategy (hook impact, CN product version bump, regression list). See \`docs/ops-hermes-codex.md\`.
+          2. Approve via Feishu: \`#同意升级 <CN产品版本>\` (dual-channel; Feishu command is authoritative).
+          3. Only then: \`npm run overlay:rebase -- ${LATEST}\`, update version table + \`docs/official-baseline\`, Release.
+
+          **Do not** rebase or publish from this workflow.
+          EOF
+          )
+          # Prefer one open issue per label; update body if title already matches latest.
+          EXISTING=$(gh issue list --label official-follow --state open --json number,title --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --title "$TITLE" --body "$BODY"
+            echo "Updated issue #$EXISTING"
+          else
+            gh label create official-follow --description "Official Web Clipper version follow" --color 0052CC 2>/dev/null || true
+            gh issue create --title "$TITLE" --label official-follow --body "$BODY"
+          fi
+
+      - name: No update
+        if: steps.compare.outputs.needs_update != 'true'
+        run: |
+          echo "Baseline ${{ steps.compare.outputs.baseline }} matches official ${{ steps.compare.outputs.latest }}. No issue."

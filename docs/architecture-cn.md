@@ -150,3 +150,4 @@ npm run build
 - 新中文站点能力：先加在 `src/cn/`，再在第 3 节列表中增加最小 hook。
 - 官方 PR / release notes：每次 rebase 后浏览上游 CHANGELOG，重点看 Reader、transcript、background、settings。
 - 冲突过多时：可新建分支自官方 tag checkout，再把 `src/cn/` 与 hook 补丁拣选过来（仍保持叠层边界）。
+- 日常跟版与 Hermes/Codex 分工、飞书口令发版：见 [ops-hermes-codex.md](ops-hermes-codex.md)；基线号同步维护 [official-baseline](official-baseline)。

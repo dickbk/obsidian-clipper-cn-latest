@@ -16,7 +16,8 @@
 - 仅在少数官方文件中保留薄 hook（`content` / `clip-utils` / `reader` / `background` / `popup` / `settings`）
 - 升级官方时：对官方 tag 做 `npm run overlay:rebase -- <官方版本>`，解决 hook 冲突后更新下方版本表
 
-完整说明（目录职责、hook 清单、rebase 步骤、验证清单）：[`docs/architecture-cn.md`](docs/architecture-cn.md)。
+完整说明（目录职责、hook 清单、rebase 步骤、验证清单）：[`docs/architecture-cn.md`](docs/architecture-cn.md)。  
+运维分工（Hermes 晨检 / Codex 策略 / 飞书口令发版 / 日报边界）：[`docs/ops-hermes-codex.md`](docs/ops-hermes-codex.md)。
 
 ## 版本对应表（跟随官方更新）
 
@@ -29,10 +30,12 @@
 
 后续跟随官方升级时：
 
-1. `git fetch upstream --tags` → `npm run overlay:rebase -- <新官方 tag>`
-2. 按 [`docs/architecture-cn.md`](docs/architecture-cn.md) 检查 hook 与回归
-3. 更新本表、`package.json`、`src/manifest.*.json` 中的 **CN 产品版本**（不要把 manifest 改回官方号）
-4. 发 Release，正文写明新的官方基线
+1. Action / Hermes 检测新官方版本并开 `official-follow` Issue（**不**自动 rebase；见 [`docs/ops-hermes-codex.md`](docs/ops-hermes-codex.md)）
+2. Codex 出升级策略 → 飞书 `#同意升级 <CN产品版本>`（或以 Cursor 确认为辅）
+3. `git fetch upstream --tags` → `npm run overlay:rebase -- <新官方 tag>`
+4. 按 [`docs/architecture-cn.md`](docs/architecture-cn.md) 检查 hook 与回归
+5. 更新本表、`docs/official-baseline`、`package.json`、`src/manifest.*.json` 中的 **CN 产品版本**（不要把 manifest 改回官方号）
+6. 发 Release，正文写明新的官方基线
 
 ## 与官方版本有什么不同？
 
