@@ -59,6 +59,9 @@ CN 开 Issue：{n} | Security/Dependabot：无 / 有（摘要）
 
 ### 3.3 Hermes 可粘贴任务说明
 
+> **真正落地步骤（NAS + cron）：** 见 [`deploy/hermes/README.md`](../deploy/hermes/README.md)。  
+> 推荐：`no_agent` + [`clipper-cn-daily-patrol.sh`](../deploy/hermes/clipper-cn-daily-patrol.sh)，stdout 直达飞书。
+
 ```text
 任务名：clipper-cn-daily-patrol
 时刻：每天 06:00（Asia/Shanghai）
@@ -75,7 +78,11 @@ CN 开 Issue：{n} | Security/Dependabot：无 / 有（摘要）
 本地/容器自检：
 
 ```bash
+# 仓内 Node 版
 node scripts/detect-official-update.js
+
+# NAS Hermes 推荐脚本（无 Node）
+bash deploy/hermes/clipper-cn-daily-patrol.sh
 ```
 
 ---
