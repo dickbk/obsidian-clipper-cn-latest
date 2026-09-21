@@ -17,7 +17,8 @@
 - 升级官方时：对官方 tag 做 `npm run overlay:rebase -- <官方版本>`，解决 hook 冲突后更新下方版本表
 
 完整说明（目录职责、hook 清单、rebase 步骤、验证清单）：[`docs/architecture-cn.md`](docs/architecture-cn.md)。  
-运维分工（Hermes 晨检 / Codex 策略 / 飞书口令发版 / 日报边界）：[`docs/ops-hermes-codex.md`](docs/ops-hermes-codex.md)。
+运维分工（Hermes 晨检 / Codex 策略 / 飞书口令发版 / 日报边界）：[`docs/ops-hermes-codex.md`](docs/ops-hermes-codex.md)。  
+知识库批量收录经验（B 站访谈 7 步流程 / 坑 / 协作边界）：[`docs/hermes-bilibili-batch-ingest.md`](docs/hermes-bilibili-batch-ingest.md)。
 
 ## 版本对应表（跟随官方更新）
 

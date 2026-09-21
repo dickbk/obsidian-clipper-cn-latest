@@ -155,3 +155,13 @@ bash deploy/hermes/clipper-cn-daily-patrol.sh
 | 先策略后同意（单次升级） | Codex 出升级策略 → 飞书 `#同意升级 x.y.z` → 再 rebase/Release |
 
 GitHub Action **只检测开 Issue**；执行升级永远在同意之后。
+
+---
+
+## 8. 相关文档（知识库收录）
+
+B 站访谈批量收录（Hermes 侧流程、坑、脚本与协作边界）不在本扩展发版主路径内，但与 Hermes vault / 情报线共用同一套约束：
+
+- [hermes-bilibili-batch-ingest.md](hermes-bilibili-batch-ingest.md) — 全流程经验
+- [hermes-batch-ingest-summary-20260921.md](hermes-batch-ingest-summary-20260921.md) — 12 期成果清单
+- [hermes-diarization-jiapeng-root-cause.md](hermes-diarization-jiapeng-root-cause.md) — 说话人分离根因
