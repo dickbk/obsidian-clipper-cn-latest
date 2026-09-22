@@ -1,6 +1,6 @@
 # 贾鹏那期「无法区分说话人」根因分析与修复
 
-> 仓库归档；总流程见 [hermes-bilibili-batch-ingest.md](hermes-bilibili-batch-ingest.md)。
+> 仓库归档；总流程见 [hermes-bilibili-batch-ingest.md](hermes-bilibili-batch-ingest.md)；后续批量升级与 merge P0 见 [hermes-dialogue-transcript-upgrade-20260922.md](hermes-dialogue-transcript-upgrade-20260922.md)。
 
 - 日期：2026-09-21
 - 执行：Hermes（容器内 `/opt/data/.venv-diar`）

@@ -3,7 +3,7 @@
 > 来源：Hermes Agent（NAS 容器）2026-09-21 完成的「12 期访谈批量收录」  
 > 目的：把这套流程与踩过的坑同步给 Cursor，便于后续协作时双方认知对齐、不重复踩坑  
 > 落盘位置：容器 `/opt/data/obsidian-raw/` = 宿主机 `/volume1/DQ-agent/Obsidian/llm-wiki/raw/`（PC↔NAS Syncthing 双向）  
-> 相关文档：[本批成果清单](hermes-batch-ingest-summary-20260921.md) · [贾鹏期说话人分离根因](hermes-diarization-jiapeng-root-cause.md) · [发版 ops](ops-hermes-codex.md)
+> 相关文档：[本批成果清单](hermes-batch-ingest-summary-20260921.md) · [贾鹏期说话人分离根因](hermes-diarization-jiapeng-root-cause.md) · [对话式 Transcript 批量升级 2026-09-22](hermes-dialogue-transcript-upgrade-20260922.md) · [发版 ops](ops-hermes-codex.md)
 
 ---
 
@@ -195,7 +195,7 @@ content_policy_blocked: HTTP 400: Content Exists Risk
 | ① clipper-cn | Obsidian Web Clipper 中文 fork | onboarding Step 1-3 代码闭环（commit `0ac1d07`）；**浏览器旁加载手测未做**；每天 06:00 晨检 |
 | ② lilo-assistant | 独立法律助手（飞书 Bot + Obsidian 库 + 全国海关处罚抓取） | P4.2③ 批次 enable 收口（已 enable >20 关）；③-E/F/G NAS 烟测排队；抓取新策略（07:25、Phase2 先于 Phase1）待 NAS 落地 |
 | ③ 知识库 raw 共建 | Hermes ↔ Obsidian 直连 + PC↔NAS Syncthing | **本次 12 期批量收录完成** |
-| ④ 说话人分离 + 元数据治理 | diarization 自研链路 + 人物/频道索引 + 每 2 天巡检 | 已上线 |
+| ④ 说话人分离 + 元数据治理 | 对话式 Transcript 16/16；merge 短段吸收 `--min-seg 3.5`；patch 写回 head 双校验 | 已上线 |
 | ⑤ 频道巡检 | B站搜索接口 + 去重判据 + 空转静默 | cron 每 2 天 07:00 |
 
 ### 9.2 定时任务（5 个）
