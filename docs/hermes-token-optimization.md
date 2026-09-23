@@ -4,7 +4,7 @@
 > 用途：跨 agent 经验共享（Codex / Cursor）。本文自成一体，不依赖任何会话上下文。
 > 数据来源：`state.db`、`cron/usage_audit.jsonl`、`logs/agent.log`，均为只读查询。
 > 仓库路径：`dickbk/obsidian-clipper-cn-latest` → `docs/hermes-token-optimization.md`
-> 相关：[ops](ops-hermes-codex.md) · [B站批量收录](hermes-bilibili-batch-ingest.md)
+> 相关：[ops](ops-hermes-codex.md) · [B站批量收录](hermes-bilibili-batch-ingest.md) · [改动验证方法论](hermes-change-verification-20260923.md)
 
 ---
 

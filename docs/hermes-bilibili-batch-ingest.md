@@ -3,7 +3,7 @@
 > 来源：Hermes Agent（NAS 容器）2026-09-21 完成的「12 期访谈批量收录」  
 > 目的：把这套流程与踩过的坑同步给 Cursor，便于后续协作时双方认知对齐、不重复踩坑  
 > 落盘位置：容器 `/opt/data/obsidian-raw/` = 宿主机 `/volume1/DQ-agent/Obsidian/llm-wiki/raw/`（PC↔NAS Syncthing 双向）  
-> 相关文档：[本批成果清单](hermes-batch-ingest-summary-20260921.md) · [贾鹏期说话人分离根因](hermes-diarization-jiapeng-root-cause.md) · [对话式 Transcript 批量升级 2026-09-22](hermes-dialogue-transcript-upgrade-20260922.md) · [Token 优化方法论](hermes-token-optimization.md) · [发版 ops](ops-hermes-codex.md)
+> 相关文档：[本批成果清单](hermes-batch-ingest-summary-20260921.md) · [贾鹏期说话人分离根因](hermes-diarization-jiapeng-root-cause.md) · [对话式 Transcript 批量升级 2026-09-22](hermes-dialogue-transcript-upgrade-20260922.md) · [Token 优化方法论](hermes-token-optimization.md) · [媒体采集与瘦身 2026-09-23](hermes-media-slim-dedupe-20260923.md) · [改动验证方法论](hermes-change-verification-20260923.md) · [发版 ops](ops-hermes-codex.md)
 
 ---
 
