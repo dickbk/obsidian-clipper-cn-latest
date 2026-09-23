@@ -166,3 +166,4 @@ B 站访谈批量收录（Hermes 侧流程、坑、脚本与协作边界）不�
 - [hermes-batch-ingest-summary-20260921.md](hermes-batch-ingest-summary-20260921.md) — 12 期成果清单
 - [hermes-diarization-jiapeng-root-cause.md](hermes-diarization-jiapeng-root-cause.md) — 说话人分离根因
 - [hermes-dialogue-transcript-upgrade-20260922.md](hermes-dialogue-transcript-upgrade-20260922.md) — 对话式 Transcript 升级 + merge 短段吸收（`--min-seg 3.5`）；纠正「严格交替」误诊
+- [hermes-token-optimization.md](hermes-token-optimization.md) — Hermes Token 消耗优化方法论（口径、no_agent、压缩阈值、勿用 `API calls: 0` 判零 LLM）
