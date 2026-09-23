@@ -4,7 +4,7 @@
 > 涵盖：抓取 → 判重 → 转写 → 压缩瘦身 → 删原件，全流程的**真实数字、可复用命令、踩过的坑**。
 > 不含凭据；命令可直接粘贴（路径按本机实际）。
 > 仓库路径：`dickbk/obsidian-clipper-cn-latest` → `docs/hermes-media-slim-dedupe-20260923.md`
-> 相关：[改动验证方法论](hermes-change-verification-20260923.md) · [B站批量收录](hermes-bilibili-batch-ingest.md) · [ops](ops-hermes-codex.md)
+> 相关：[改动验证方法论](hermes-change-verification-20260923.md) · [说话人归属与巡检](hermes-speaker-attribution-patrol-20260923.md) · [关键词口径核对](hermes-keyword-audit-20260923.md) · [B站批量收录](hermes-bilibili-batch-ingest.md) · [ops](ops-hermes-codex.md)
 
 ---
 

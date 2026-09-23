@@ -2,7 +2,7 @@
 
 > 日期：2026-09-22 ｜ 执行：Hermes（NAS 容器侧）
 > **本文脱离原始会话可独立读懂，可直接转发给 designer / Cursor 等 agent。** 不含凭据。
-> 相关：[B站批量收录全流程](hermes-bilibili-batch-ingest.md) · [贾鹏期说话人分离根因](hermes-diarization-jiapeng-root-cause.md) · [ops](ops-hermes-codex.md)
+> 相关：[B站批量收录全流程](hermes-bilibili-batch-ingest.md) · [贾鹏期说话人分离根因](hermes-diarization-jiapeng-root-cause.md) · [说话人归属修复 2026-09-23](hermes-speaker-attribution-patrol-20260923.md) · [ops](ops-hermes-codex.md)
 > NAS 交付：`/opt/data/feishu/20260922-对话式Transcript批量升级/`（以本文为准；前一版「严格交替」诊断已作废）
 > 仓库路径：`dickbk/obsidian-clipper-cn-latest` → `docs/hermes-dialogue-transcript-upgrade-20260922.md`
 

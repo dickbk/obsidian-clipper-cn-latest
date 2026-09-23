@@ -169,3 +169,5 @@ B 站访谈批量收录（Hermes 侧流程、坑、脚本与协作边界）不�
 - [hermes-token-optimization.md](hermes-token-optimization.md) — Hermes Token 消耗优化方法论（口径、no_agent、压缩阈值、勿用 `API calls: 0` 判零 LLM）
 - [hermes-change-verification-20260923.md](hermes-change-verification-20260923.md) — 改动验证方法论（落盘≠生效≠正确≠有效；快照差分验收）
 - [hermes-media-slim-dedupe-20260923.md](hermes-media-slim-dedupe-20260923.md) — 媒体采集与瘦身 / 跨平台判重（勿用产物文本做 A/B）
+- [hermes-speaker-attribution-patrol-20260923.md](hermes-speaker-attribution-patrol-20260923.md) — 说话人归属修复（锚点+混段+吸收豁免）与巡检泛词双命中
+- [hermes-keyword-audit-20260923.md](hermes-keyword-audit-20260923.md) — 人物/关键词口径核对（索引 vs media-channels.yaml；待 designer 定夺）
