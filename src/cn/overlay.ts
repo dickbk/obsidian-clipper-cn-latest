@@ -5,6 +5,7 @@ import { rewriteBilibiliEmbedInParsedContent } from './bilibili-video-meta';
 import { overlayBilibiliTranscript } from './transcript-overlay';
 import { stripTranscriptFallback } from './transcript-html';
 import { extractWeChatArticleContent } from './wechat';
+import { extractXiaohongshuNote, extractXiaohongshuNoteAsync, XiaohongshuNoteContent } from './xiaohongshu';
 
 const logger = createLogger('Overlay');
 
@@ -15,6 +16,16 @@ export interface OverlayClipFields {
 	site?: string;
 	wordCount?: number;
 	variables?: { [key: string]: string };
+}
+
+function applyXiaohongshuNote(parsed: OverlayClipFields, note: XiaohongshuNoteContent | null): void {
+	if (!note) {
+		return;
+	}
+	parsed.content = note.content;
+	parsed.title = note.title || parsed.title;
+	parsed.author = note.author || parsed.author;
+	parsed.site = '小红书';
 }
 
 export function prepareDocumentForClip(doc: Pick<Document, 'querySelectorAll'>): void {
@@ -30,6 +41,7 @@ export function overlayParsedContent<T extends OverlayClipFields>(
 	if (wechatContent) {
 		parsed.content = wechatContent;
 	}
+	applyXiaohongshuNote(parsed, extractXiaohongshuNote(url, htmlDoc));
 	if (parsed.content) {
 		parsed.content = stripTranscriptFallback(parsed.content);
 	}
@@ -58,6 +70,7 @@ export async function overlayParsedContentAsync<T extends OverlayClipFields>(
 	}
 
 	overlayParsedContent(url, pageDoc, parsed);
+	applyXiaohongshuNote(parsed, await extractXiaohongshuNoteAsync(url, pageDoc));
 	await rewriteBilibiliEmbedInParsedContent(url, parsed);
 	await overlayBilibiliTranscript(url, parsed, { forReader: options?.forReader });
 	return parsed;

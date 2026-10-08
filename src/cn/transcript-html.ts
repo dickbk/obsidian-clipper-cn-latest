@@ -1,3 +1,5 @@
+import { getXiaohongshuNoteId } from './xiaohongshu-url';
+
 export interface TranscriptCue {
 	start: number;
 	end?: number;
@@ -43,7 +45,19 @@ export function parseBilibiliVideoId(url: string): { bvid: string | null; aid: n
 /** Bump when ASR audio identity / FunASR input format changes so stale wrong-track caches drop. */
 export const TRANSCRIPT_CACHE_VERSION = 'v17';
 
+export function isTranscriptVideoUrl(url: string): boolean {
+	return isBilibiliVideoUrl(url) || Boolean(getXiaohongshuNoteId(url));
+}
+
+export function isXiaohongshuTranscriptKey(cacheKey: string): boolean {
+	return cacheKey.startsWith('xiaohongshu:');
+}
+
 export function transcriptCacheKey(url: string): string | null {
+	const xhsNoteId = getXiaohongshuNoteId(url);
+	if (xhsNoteId) {
+		return `xiaohongshu:${xhsNoteId}:${TRANSCRIPT_CACHE_VERSION}`;
+	}
 	const parsed = parseBilibiliVideoId(url);
 	if (!parsed) return null;
 	const id = parsed.bvid || (parsed.aid ? `av${parsed.aid}` : '');
@@ -63,7 +77,7 @@ export function platformTranscriptText(parsed: OverlayTranscriptFields): string 
 	const fromVar = parsed.variables?.transcript?.trim() || '';
 	if (fromVar) return fromVar;
 	const content = parsed.content || '';
-	if (!/class="(?:bilibili|youtube) transcript"/.test(content) || !content.includes('transcript-segment')) {
+	if (!/class="(?:bilibili|youtube|xiaohongshu) transcript"/.test(content) || !content.includes('transcript-segment')) {
 		return '';
 	}
 	return content
@@ -174,7 +188,7 @@ export function transcriptMatchesTitleHints(transcript: string, title: string): 
 
 export function stripPlatformTranscript(content: string): string {
 	return content.replace(
-		/<div class="(?:bilibili|youtube) transcript"[\s\S]*?<\/div>/gi,
+		/<div class="(?:bilibili|youtube|xiaohongshu) transcript"[\s\S]*?<\/div>/gi,
 		''
 	).trim();
 }
@@ -199,7 +213,7 @@ export function escapeTranscriptHtml(value: string): string {
 		.replace(/'/g, '&#39;');
 }
 
-export function buildGeneratedTranscript(site: 'bilibili' | 'youtube', cues: TranscriptCue[]): { html: string; text: string } {
+export function buildGeneratedTranscript(site: 'bilibili' | 'youtube' | 'xiaohongshu', cues: TranscriptCue[]): { html: string; text: string } {
 	const htmlParts: string[] = [];
 	const textParts: string[] = [];
 

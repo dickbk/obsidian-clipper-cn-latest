@@ -15,6 +15,7 @@ import {
 	getTranscriptSettings,
 } from './transcript-cache';
 import { resolveBilibiliVideoMeta } from './bilibili-video-meta';
+import { getXiaohongshuNoteId } from './xiaohongshu-url';
 
 function clearUnusablePlatformTranscript<T extends OverlayTranscriptFields>(parsed: T): T {
 	if (parsed.content) {
@@ -37,6 +38,11 @@ export async function overlayBilibiliTranscript<T extends OverlayTranscriptField
 	parsed: T,
 	options?: { forReader?: boolean }
 ): Promise<T> {
+	if (getXiaohongshuNoteId(url)) {
+		const cacheKey = transcriptCacheKey(url);
+		const cached = cacheKey ? await getCachedTranscript(cacheKey) : null;
+		return cacheBelongsToVideo(cached) ? applyGeneratedTranscript(parsed, cached!.html, cached!.text) : parsed;
+	}
 	if (!isBilibiliVideoUrl(url)) {
 		return parsed;
 	}

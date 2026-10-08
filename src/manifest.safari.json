@@ -2,8 +2,8 @@
 	"manifest_version": 3,
 	"name": "Obsidian Web Clipper CN",
 	"homepage_url": "https://github.com/dickbk/obsidian-clipper-cn-latest",
-	"version": "0.1.0",
-	"description": "Chinese-enhanced fork of Obsidian Web Clipper (official baseline 1.7.1): Feishu, WeChat, Bilibili Reader, FunASR transcripts.",
+	"version": "0.1.1",
+	"description": "Chinese-enhanced fork of Obsidian Web Clipper (official baseline 1.7.1): Feishu, WeChat, Bilibili, Xiaohongshu, FunASR transcripts.",
 	"permissions": [
 		"activeTab",
 		"clipboardWrite",

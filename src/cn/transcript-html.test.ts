@@ -8,8 +8,11 @@ import {
 	hasPlatformTranscript,
 	isBilibiliVideoUrl,
 	isMostlyMusicTranscript,
+	isTranscriptVideoUrl,
 	isUsablePlatformTranscript,
+	isXiaohongshuTranscriptKey,
 	maxTranscriptTimestampSec,
+	OverlayTranscriptFields,
 	stripTranscriptFallback,
 	transcriptCacheKey,
 	transcriptMatchesTitleHints,
@@ -24,6 +27,25 @@ describe('transcript html', () => {
 			'https://www.bilibili.com/video/BV1s43t6UEaW/?p=2'
 		);
 		expect(isBilibiliVideoUrl('https://www.youtube.com/watch?v=abc')).toBe(false);
+	});
+
+	test('detects Xiaohongshu note URLs and cache keys', () => {
+		const url = 'https://www.xiaohongshu.com/discovery/item/6ac650dc000000001b02f07a?xsec_token=x';
+		expect(isTranscriptVideoUrl(url)).toBe(true);
+		expect(transcriptCacheKey(url)).toBe('xiaohongshu:6ac650dc000000001b02f07a:v17');
+		expect(isXiaohongshuTranscriptKey('xiaohongshu:6ac650dc000000001b02f07a:v17')).toBe(true);
+		expect(isXiaohongshuTranscriptKey('bilibili:BV1s43t6UEaW:p2:v17')).toBe(false);
+		expect(isTranscriptVideoUrl('https://www.xiaohongshu.com/explore')).toBe(false);
+	});
+
+	test('replaces an earlier Xiaohongshu transcript instead of stacking', () => {
+		const first = buildGeneratedTranscript('xiaohongshu', [{ start: 0, text: '旧' }]);
+		const second = buildGeneratedTranscript('xiaohongshu', [{ start: 5, text: '新' }]);
+		const parsed = applyGeneratedTranscript<OverlayTranscriptFields>({ content: `<article>正文</article>\n${first.html}` }, second.html, second.text);
+		expect(parsed.content).toContain('<div class="xiaohongshu transcript">');
+		expect(parsed.content).toContain('新');
+		expect(parsed.content).not.toContain('· 旧');
+		expect(parsed.variables?.transcript).toBe('**0:05** · 新');
 	});
 
 	test('detects Defuddle platform transcripts', () => {

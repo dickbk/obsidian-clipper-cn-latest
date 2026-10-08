@@ -1,12 +1,13 @@
 import browser from '../utils/browser-polyfill';
 import { getMessage } from '../utils/i18n';
 import {
-	isBilibiliVideoUrl,
 	isMostlyMusicTranscript,
+	isTranscriptVideoUrl,
 	isUsablePlatformTranscript,
 	transcriptCacheKey,
 	transcriptMatchesTitleHints,
 } from './transcript-html';
+import { getXiaohongshuNoteId } from './xiaohongshu-url';
 import { getTranscriptSettings } from './transcript-cache';
 import { resolveBilibiliVideoMeta } from './bilibili-video-meta';
 import { FUNASR_MISSING_KEY_ERROR } from './funasr';
@@ -198,7 +199,12 @@ export async function syncTranscriptGeneratorPanel(
 		currentUrl = url;
 		currentCacheKey = transcriptCacheKey(url);
 		const settings = await getTranscriptSettings();
-		if (!settings.enabled || !isBilibiliVideoUrl(url) || !currentCacheKey) {
+		const isXiaohongshu = Boolean(getXiaohongshuNoteId(url));
+		if (!settings.enabled || !isTranscriptVideoUrl(url) || !currentCacheKey) {
+			panelEl.style.display = 'none';
+			return;
+		}
+		if (isXiaohongshu && !variables['{{content}}']?.includes('<video')) {
 			panelEl.style.display = 'none';
 			return;
 		}
@@ -276,7 +282,8 @@ export async function syncTranscriptGeneratorPanel(
 		}
 
 		// Auto-start once per cache key so reopen/sync does not stack tasks.
-		if (autoStartedForKey === currentCacheKey) {
+		// Xiaohongshu downloads the whole video, so wait for an explicit click.
+		if (isXiaohongshu || autoStartedForKey === currentCacheKey) {
 			setBusy(false);
 			setStatus('');
 			return;

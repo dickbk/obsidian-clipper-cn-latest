@@ -6,6 +6,7 @@
 - 上游官方仓库：[obsidianmd/obsidian-clipper](https://github.com/obsidianmd/obsidian-clipper)
 - 中文增强参考：[nextcaicai/obsidian-clipper-cn](https://github.com/nextcaicai/obsidian-clipper-cn)（微信 / 飞书 / B 站阅读模式）
 - 无字幕转写参考：[whatcccup/obsidian-web-clipper-cn-transcript](https://github.com/whatcccup/obsidian-web-clipper-cn-transcript)（流程与产品思路；原使用必剪 BCut 免费额度有限额，本仓库改为扩展内 FunASR - 多ASR比较后是当前性价比最高的方案，不依赖 macOS Helper）
+- 小红书数据结构参考：[xpzouying/xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp)（借鉴其「从页面 `window.__INITIAL_STATE__.note.noteDetailMap` 读取笔记」的思路与字段：图片列表、视频流、正文、作者；**未**引入其代码，也不做登录自动化、搜索或发布）
 
 ## 架构方案（便于跟随官方更新）
 
@@ -27,6 +28,7 @@
 
 | CN 版本 | 官方 Web Clipper 基线 | 说明 |
 | --- | --- | --- |
+| **0.1.1** | **1.7.1** | 新增小红书适配：图片 / 视频链接 / 正文、点点 AI 官方解读、视频 FunASR 逐字稿 |
 | **0.1.0** | **1.7.1** | 首发：官方 1.7.1 + 中文叠层（微信 / 飞书 / B 站）+ FunASR 无 CC 转写 |
 
 后续跟随官方升级时：
@@ -47,6 +49,7 @@
 | 飞书 / Lark 文档走开放平台结构化 API | 官方 DOM 解析在飞书动态渲染下内容不完整 |
 | B 站阅读模式：播放器嵌入、字幕滚动 / 高亮、时间戳跳转 | 对齐官方 YouTube Reader 体验 |
 | 无平台字幕时，用 **千问 AI 平台 Fun-ASR** 生成 `{{transcript}}` | 参考 transcript 项目「补齐逐字稿、写回原变量」的流程；本仓库在扩展内完成，跨 Windows / macOS，不依赖必剪额度与本地 Helper |
+| 小红书笔记：完整图片、视频链接、正文、作者；「点点」AI 回复作为官方解读；视频逐字稿 | 官方提取器在 PC 弹窗模式下会混入其他笔记内容，且拿不到全部图片与视频 |
 | 旁加载安装（Release zip） | 中文增强无法进入官方商店渠道，需开发者模式加载 |
 
 ### 为什么没有合并到官方？
@@ -70,6 +73,8 @@
 | 微信公众号图片 | 无额外账号 | 需能正常打开公众号文章页 |
 | B 站有 CC 字幕 | 无额外账号 | 继续用原生 `{{transcript}}` |
 | B 站无 CC / 不可用 CC | **千问 AI 平台 / DashScope API Key**（`sk-ws-…`） | 音频经临时存储上传后由 Fun-ASR 识别；约按量计费，详见[千问 Fun-ASR](https://www.qianwenai.com/models/fun-asr) |
+| 小红书图文 / 视频笔记 | 无额外账号 | 需能正常打开笔记页 |
+| 小红书视频逐字稿 | 同上 DashScope API Key | 视频地址直接交给 Fun-ASR 拉取，不经本机下载上传；需手动点 Generate transcript |
 
 本仓库**不**依赖：必剪 BCut 免费额度（有额度限制，换成高性价比FunASR）、macOS Native Messaging Helper、本地 Faster Whisper。
 
@@ -118,10 +123,28 @@ npm run build
 
 在扩展设置 → **General → Transcript generator** 中填写「千问 AI 平台 API Key」。
 
+## 小红书剪藏
+
+支持 `xiaohongshu.com/explore/<id>` 与 `/discovery/item/<id>` 笔记页（含 PC 网页弹窗模式）：
+
+- 图文：全部图片以稳定原图链接写入（`sns-img-qc.xhscdn.com/<fileId>`）
+- 视频：写入 `<video>` 播放链接与封面，**不**把视频文件下载进 vault（与 YouTube 做法一致：链接留底 + 逐字稿）
+- 评论区若有「点点」AI 回复（逐字稿 / 总结），写入「官方解读（点点）」小节
+- 视频笔记可在弹窗点 **Generate transcript**，由 Fun-ASR 生成带时间戳逐字稿，追加在末尾 `## Transcript`
+
+### 注意事项
+
+- 剪藏前请先等笔记内容加载完；弹窗模式下打开的是哪篇，就剪哪篇
+- 图片与视频是小红书 CDN 外链，不是本地文件；平台删除或改链后可能失效，需要长期留存请自行另存
+- 视频 CDN 节点可用性因网络而异，逐字稿会按顺序尝试多条线路，失败会提示已尝试的线路数
+- 「点点」回复受平台限制约 1000 字，长视频的点点逐字稿常被截断；以 Fun-ASR 逐字稿为准
+- Fun-ASR 为按量计费服务，专有名词（如 Claude Code）可能识别有误
+- 仅读取你当前已能正常浏览的公开页面数据，不绕过登录、不批量抓取；请遵守小红书用户协议与内容版权
+
 ## 许可证与商标
 
 源码遵循与官方一致的 [MIT License](LICENSE)。Obsidian 商标、图标与营销资产不在该许可范围内。  
-本项目亦非飞书、微信、哔哩哔哩、阿里云 / 千问的官方产品。
+本项目亦非飞书、微信、哔哩哔哩、小红书、阿里云 / 千问的官方产品。
 
 ## 官方文档（能力基线）
 

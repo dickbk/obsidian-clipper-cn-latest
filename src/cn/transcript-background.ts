@@ -1,6 +1,6 @@
 import type { Runtime } from 'webextension-polyfill';
 import { downloadBinaryByRange } from './audio-download';
-import { transcribeWithFunAsr, FUNASR_MISSING_KEY_ERROR } from './funasr';
+import { transcribeFunAsrUrl, transcribeWithFunAsr, FUNASR_MISSING_KEY_ERROR } from './funasr';
 import { audioFileLabel, audioUrlBelongsToCid, audioUrlStrictlyMatchesCid, cidFromDashAudioUrl, dashDurationMatches, preferAlternateCdnUrls } from './bilibili-audio-match';
 import { fetchBilibiliPlayurlAudioInPage, type PageAudioLookupResult } from './bilibili-page-audio';
 import { resolveBilibiliVideoMeta, type BilibiliVideoMeta } from './bilibili-video-meta';
@@ -10,10 +10,14 @@ import {
 	buildGeneratedTranscript,
 	bilibiliUrlFromCacheKey,
 	formatTranscriptTimestamp,
+	isXiaohongshuTranscriptKey,
 	parseBilibiliVideoId,
 	transcriptCacheKey,
 	transcriptMatchesTitleHints,
+	TranscriptCue,
 } from './transcript-html';
+import { getXiaohongshuVideoSource, readXiaohongshuRuntimeNote } from './xiaohongshu';
+import { getXiaohongshuNoteId } from './xiaohongshu-url';
 import {
 	cueCoverageSeconds,
 	mergeChunkedCues,
@@ -604,6 +608,82 @@ async function runGenerateTask(url: string, tabId?: number, force = false, cache
 	}
 }
 
+async function runXiaohongshuTask(url: string, tabId: number | undefined, force: boolean): Promise<void> {
+	const noteId = getXiaohongshuNoteId(url);
+	const cacheKey = transcriptCacheKey(url);
+	if (!noteId || !cacheKey) return;
+	const taskBase = { cacheKey, url, tabId };
+
+	if (force) {
+		await clearCachedTranscript(cacheKey);
+		await clearTranscriptTask(cacheKey);
+	} else {
+		const cached = await getCachedTranscript(cacheKey);
+		if (cached) {
+			await broadcast({ ...taskBase, status: 'completed', stage: '字幕已生成', result: cached });
+			return;
+		}
+	}
+	if (runningTasks.has(cacheKey)) return;
+	runningTasks.add(cacheKey);
+	try {
+		const apiKey = (await getTranscriptSettings()).dashscopeApiKey?.trim() || '';
+		if (!apiKey) {
+			throw new Error(FUNASR_MISSING_KEY_ERROR);
+		}
+		await broadcast({ ...taskBase, status: 'downloading', stage: '正在读取笔记视频' });
+		const runtime = tabId != null ? await readXiaohongshuRuntimeNote(tabId, noteId) : null;
+		const video = runtime ? getXiaohongshuVideoSource(runtime.note) : null;
+		if (!video) {
+			throw new Error('没有读到这篇笔记的视频。请确认是视频笔记，并刷新页面后重试。');
+		}
+
+		// The video is a public CDN file, so FunASR fetches it directly; no local download/upload.
+		let transcribed: { cues: TranscriptCue[] } | null = null;
+		let lastError: unknown = null;
+		for (const [index, url] of video.urls.entries()) {
+			try {
+				transcribed = await transcribeFunAsrUrl(url, {
+					apiKey,
+					languageHints: ['zh'],
+					expectedDurationSec: video.durationSec,
+					onStage: async (stage) => {
+						await broadcast({ ...taskBase, status: 'transcribing', stage: `线路 ${index + 1}/${video.urls.length}：${stage}` });
+					},
+				});
+				break;
+			} catch (error) {
+				lastError = error;
+				if (/鉴权失败/.test(error instanceof Error ? error.message : '')) break;
+			}
+		}
+		if (!transcribed) {
+			throw new Error(`FunASR 识别失败（已尝试 ${video.urls.length} 条视频线路）：${lastError instanceof Error ? lastError.message : String(lastError)}`);
+		}
+		if (!transcribed.cues.length) {
+			throw new Error('FunASR 没有返回可用字幕。这条视频可能几乎没有人声。');
+		}
+
+		const generated = buildGeneratedTranscript('xiaohongshu', transcribed.cues);
+		const result = {
+			html: generated.html,
+			text: generated.text,
+			createdAt: Date.now(),
+			source: 'funasr' as const,
+			coverageSec: cueCoverageSeconds(transcribed.cues),
+			expectedDurationSec: video.durationSec,
+		};
+		await setCachedTranscript(cacheKey, result);
+		await broadcast({ ...taskBase, status: 'completed', stage: '字幕已生成', result });
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		logger.error('Xiaohongshu transcript failed', { cacheKey, error: message });
+		await broadcast({ ...taskBase, status: 'failed', stage: '生成失败', error: message });
+	} finally {
+		runningTasks.delete(cacheKey);
+	}
+}
+
 export function installTranscriptListeners(): void {
 	if (typeof chrome === 'undefined' || !chrome.runtime?.onConnect) return;
 	void enableBilibiliAudioRules();
@@ -630,7 +710,10 @@ export function handleTranscriptBackgroundMessage(
 				return;
 			}
 			sendResponse({ success: true, started: true });
-			void keepAliveWhile(runGenerateTask(url, tabId, force, cacheKeyHint)).catch((error) => {
+			const task = getXiaohongshuNoteId(url)
+				? runXiaohongshuTask(url, tabId, force)
+				: runGenerateTask(url, tabId, force, cacheKeyHint);
+			void keepAliveWhile(task).catch((error) => {
 				logger.debug('Transcript task rejected', { error: String(error) });
 			});
 		}).catch((error) => {
@@ -660,7 +743,7 @@ export function handleTranscriptBackgroundMessage(
 			const usable = cacheBelongsToVideo(cached, identity, transcriptMatchesTitleHints);
 			// When URL meta is known, require cid/bvid match. When meta fetch fails,
 			// still require the cache itself to be tagged (reject legacy wrong-track entries).
-			const legacySafe = Boolean(cached?.audioCid && cached?.bvid);
+			const legacySafe = isXiaohongshuTranscriptKey(cacheKey) || Boolean(cached?.audioCid && cached?.bvid);
 			// While regenerating, never hand Reader/popup a stale completed cache/result.
 			const safeCached = inProgress
 				? null

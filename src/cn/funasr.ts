@@ -197,6 +197,25 @@ export async function transcribeWithFunAsr(
 
 	await options.onStage?.('正在上传音频到阿里云临时存储');
 	const fileUrl = await uploadAudioToTempOss(apiKey, audio, fileName);
+	return transcribeFunAsrUrl(fileUrl, options);
+}
+
+/** Transcribe a file FunASR can fetch itself (public http(s) URL or oss:// key). */
+export async function transcribeFunAsrUrl(
+	fileUrl: string,
+	options: {
+		apiKey: string;
+		languageHints?: string[];
+		pollIntervalMs?: number;
+		maxPollMs?: number;
+		expectedDurationSec?: number;
+		onStage?: (stage: string) => void | Promise<void>;
+	}
+): Promise<{ cues: TranscriptCue[]; originalDurationSec: number }> {
+	const apiKey = options.apiKey.trim();
+	if (!apiKey) {
+		throw new Error(FUNASR_MISSING_KEY_ERROR);
+	}
 
 	await options.onStage?.('已提交 FunASR 识别任务');
 	const taskId = await submitTranscription(apiKey, fileUrl, options.languageHints || ['zh']);
